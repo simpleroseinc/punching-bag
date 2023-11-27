@@ -1,0 +1,125 @@
+name: BudLight (CICD)
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+    - develop # runs `make pr`
+  push:
+    branches:
+      - develop # runs `make ci` and `make cd`
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  CMAKE_BUILD_TYPE: 'RelWithDebInfo'
+  DOCKER_HOST: 'unix:///run/user/1006/docker.sock'
+  GITHUB_REPOSITORY: budlight
+  LANG: 'C.UTF-8'
+  LC_ALL: 'C.UTF-8'
+  PROJECT: 'budlight'
+  REGISTRY: '001978429989.dkr.ecr.us-east-1.amazonaws.com'
+
+jobs:
+  ci:
+    name: CI
+    # runs-on: budlight
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, 'UPDATE: version') && (github.event_name != 'pull_request' || github.base_ref == 'develop')"
+    # this `if` is needed so that version-bump doesn't fully retrigger a new GHA
+    # because it'll add a commit with that header.  Furthermore, this needs to be
+    # restricted so that ONLY PRS TO DEVELOP are triggered.  This file's header
+    # isn't enough; GH considers develop as part of the event either way
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }} # On PR, this looks like: "refs/pull/:prNumber/merge"
+        fetch-depth: 0
+        token: ${{ secrets.SIMPLEROSE_CI_PAT }}
+
+    # - name: Checkout submodules
+    #   run: |
+    #     # Authenticate for private submodules
+    #     eval $(ssh-agent -s)
+    #     ssh-add ~/.ssh/id_rsa
+    #     # Download submodules
+    #     git submodule update --init --recursive
+
+    # - name: CLang Linter
+    #   run: |
+    #     # export CLANG_FORMAT=`find . \( -path "./modules" -o -path "./build" -o -path "./release" -o -path "./amqp/build" \) -prune -o -name "*.[cu|h|cuh|cc|cpp]" -exec clang-format --dry-run {} \; 2>&1`
+    #     export CLANG_FORMAT=`make dry-run-format`
+    #     if [ ! -z "$CLANG_FORMAT" ]; then
+    #       echo $CLANG_FORMAT
+    #       exit 1
+    #     fi
+
+    - name: Run PR Job
+      id: run-pr-job
+      if: ${{ github.event_name == 'pull_request' }}
+      run: |
+        make pr -n
+        make pr
+
+    - name: Run CI Job
+      id: run-ci-job
+      if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/develop' }}
+      run: |
+        make ci -n
+        make ci
+        make binary-push -n
+        make binary-push
+
+    - name: Commit new version
+      id: version-bump
+      if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/develop' }}
+      run: |
+        make version-bump-patch -n
+        make version-bump-patch
+        git config --global user.name "SimpleRose CI Bot"
+        git config --global user.email "ops+gha@simplerose.com"
+        git add cicd/version.txt
+        git commit -m 'UPDATE: version'
+        git push
+
+  cd-dev:
+    name: CD (Develop)
+    runs-on: budlight
+    needs: ci
+    if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/develop' }}
+    steps:
+
+    - name: Checkout Repository
+      id: checkout_repo
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ github.ref }} # On PR, this looks like: "refs/pull/:prNumber/merge"
+        fetch-depth: 0
+        token: ${{ secrets.SIMPLEROSE_CI_PAT }}
+
+    # creates the following ENV VARs
+    # ROSETTE_AMQP_CREDENTIALS_DEV_AMQP_HOST
+    # ROSETTE_AMQP_CREDENTIALS_DEV_AMQP_PASSWORD
+    # - name: Get Secrets
+    #   id: get_secrets
+    #   uses: aws-actions/aws-secretsmanager-get-secrets@v1
+    #   with:
+    #     secret-ids: |
+    #       rosette/amqp/credentials/dev
+    #     parse-json-secrets: true
+
+    # - name: Update in dev.amqp
+    #   id: aws_creds_parse
+    #   run: |
+    #     jq --arg host     "$ROSETTE_AMQP_CREDENTIALS_DEV_AMQP_HOST"         '.host' cicd/dev.amqp > cicd/dev.amqp
+    #     jq --arg password "$ROSETTE_AMQP_CREDENTIALS_DEV_AMQP_PASSWORD" '.password' cicd/dev.amqp > cicd/dev.amqp
+    #     cat cicd/dev.amqp
+
+    - name: Development Deploy
+      id: deploy_dev
+      run: |
+        make cd -n
+        make cd
+
+
