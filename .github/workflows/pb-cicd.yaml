@@ -33,10 +33,10 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
-      with:
-        ref: ${{ github.ref }} # On PR, this looks like: "refs/pull/:prNumber/merge"
-        fetch-depth: 0
-        token: ${{ secrets.SIMPLEROSE_CI_PAT }}
+      # with:
+      #   ref: ${{ github.ref }} # On PR, this looks like: "refs/pull/:prNumber/merge"
+      #   fetch-depth: 0
+      #   token: ${{ secrets.SIMPLEROSE_CI_PAT }}
 
     # - name: Checkout submodules
     #   run: |
