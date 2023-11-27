@@ -8,7 +8,7 @@ pr:
 
 .PHONY: ci
 ci:
-	@echo 'CI JOB is being RUN!!
+	@echo 'CI JOB is being RUN!!'
 
 
 .PHONY: binary-push
