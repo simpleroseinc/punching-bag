@@ -93,10 +93,10 @@ jobs:
     - name: Checkout Repository
       id: checkout_repo
       uses: actions/checkout@v2
-      with:
-        ref: ${{ github.ref }} # On PR, this looks like: "refs/pull/:prNumber/merge"
-        fetch-depth: 0
-        token: ${{ secrets.SIMPLEROSE_CI_PAT }}
+      # with:
+        # ref: ${{ github.ref }} # On PR, this looks like: "refs/pull/:prNumber/merge"
+        # fetch-depth: 0
+        # token: ${{ secrets.SIMPLEROSE_CI_PAT }}
 
     # creates the following ENV VARs
     # ROSETTE_AMQP_CREDENTIALS_DEV_AMQP_HOST
