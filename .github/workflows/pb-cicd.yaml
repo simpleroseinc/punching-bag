@@ -13,7 +13,7 @@ env:
   AWS_DEFAULT_REGION: us-east-1
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   CMAKE_BUILD_TYPE: 'RelWithDebInfo'
-  DOCKER_HOST: 'unix:///run/user/1006/docker.sock'
+  # DOCKER_HOST: 'unix:///run/user/1006/docker.sock'
   GITHUB_REPOSITORY: budlight
   LANG: 'C.UTF-8'
   LC_ALL: 'C.UTF-8'
