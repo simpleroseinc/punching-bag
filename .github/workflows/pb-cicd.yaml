@@ -74,7 +74,7 @@ jobs:
 
     - name: Commit new version
       id: version-bump
-      if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/develop' }}
+      # if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/develop' }}
       run: |
         make version-bump-patch -n
         make version-bump-patch
