@@ -80,9 +80,11 @@ jobs:
         make version-bump-patch
         git config --global user.name "SimpleRose CI Bot"
         git config --global user.email "ops+ci@simplerose.com"
+        git status
+        git log 
         git add cicd/version.txt
         git commit -m 'UPDATE: version'
-        git push
+        git push origin ${{ github.event.ref }}
 
   cd-dev:
     name: CD (Develop)
