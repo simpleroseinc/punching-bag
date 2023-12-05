@@ -81,16 +81,16 @@ jobs:
         git config --local user.name "SimpleRose CI Bot"
         git config --local user.email "ops+ci@simplerose.com"
         git status
-        echo ''
+        echo '===='
         git log
-        echo ''
+        echo '===='
 
         git add cicd/version.txt
+        echo '===='
         git checkout ${{ github.event.ref }}
-        echo ''
         git commit -m 'UPDATE: version'
-        echo ''
-        git push origin ${{ github.event.ref }}
+        echo '===='
+        git push
 
   cd-dev:
     name: CD (Develop)
