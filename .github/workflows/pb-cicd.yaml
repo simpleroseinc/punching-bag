@@ -78,8 +78,8 @@ jobs:
       run: |
         make version-bump-patch -n
         make version-bump-patch
-        git config --global user.name "SimpleRose CI Bot"
-        git config --global user.email "ops+ci@simplerose.com"
+        git config --local user.name "SimpleRose CI Bot"
+        git config --local user.email "ops+ci@simplerose.com"
         git status
         echo ''
         git log
