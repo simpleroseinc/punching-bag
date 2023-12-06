@@ -55,7 +55,6 @@ jobs:
 
     - name: Release
       id: run-release-job
-      if: ${{ github.event_name == 'push' && github.event.ref == 'refs/heads/main' }}
       uses: actions/create-release@latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
